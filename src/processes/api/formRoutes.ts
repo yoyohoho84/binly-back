@@ -1,75 +1,68 @@
 import { Router, Request, Response } from "express";
+import { Form } from "../../entities/form/entity/Form";
+import { validateForm } from "../../config/validation";
+import logger from "../../config/logger";
 import { formStore } from "../../entities/form/model/store";
-import { FormData, FormResponse } from "../../entities/form/types";
 
 const router = Router();
 
-interface FormRequestBody {
-  name: string;
-  phone: string;
-  district: string;
-  address: string;
-  consent: boolean;
-}
-
-const handleFormSubmit = async (req: Request, res: Response): Promise<void> => {
+router.post("/form", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, phone, district, address, consent } =
-      req.body as FormRequestBody;
-
-    // Проверка обязательных полей
-    if (!name || !phone || !district || !address || consent === undefined) {
-      const response: FormResponse = {
-        success: false,
-        message: "Все поля обязательны для заполнения",
-      };
-      res.status(400).json(response);
+    // Валидация входящих данных
+    const { error, value } = validateForm(req.body);
+    if (error) {
+      logger.warn("Validation error:", error.details);
+      res.status(400).json({
+        error: "Validation Error",
+        details: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message,
+        })),
+      });
       return;
     }
 
-    // Проверка согласия
-    if (!consent) {
-      const response: FormResponse = {
-        success: false,
-        message: "Необходимо согласие на обработку данных",
-      };
-      res.status(400).json(response);
-      return;
-    }
+    const form = formStore.add(value as Form);
+    logger.info("Form submitted successfully:", { id: form.id });
 
-    const formData: FormData = {
-      name,
-      phone,
-      district,
-      address,
-      consent,
-      createdAt: new Date(),
-    };
-
-    formStore.add(formData);
-
-    const response: FormResponse = {
+    res.status(201).json({
       success: true,
-      message: "Форма успешно отправлена",
-      data: formData,
-    };
-
-    res.json(response);
-  } catch (error) {
-    const response: FormResponse = {
-      success: false,
-      message: "Ошибка при отправке формы",
-    };
-    res.status(400).json(response);
+      message: "Form submitted successfully",
+      data: form,
+    });
+  } catch (err) {
+    logger.error("Error submitting form:", err);
+    res.status(500).json({
+      error: "Internal Server Error",
+      message: "Failed to submit form",
+    });
   }
-};
+});
 
-const handleFormCount = async (_req: Request, res: Response): Promise<void> => {
-  const count = formStore.count();
-  res.json({ count });
-};
+router.get("/form", async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const forms = formStore.getAll();
+    res.json(forms);
+  } catch (err) {
+    logger.error("Error fetching forms:", err);
+    res.status(500).json({
+      error: "Internal Server Error",
+      message: "Failed to fetch forms",
+    });
+  }
+});
 
-router.post("/form", handleFormSubmit);
-router.get("/form/count", handleFormCount);
+router.get("/form/count", (_req: Request, res: Response): void => {
+  try {
+    const count = formStore.getAll().length;
+    res.json({ count });
+  } catch (err) {
+    logger.error("Error counting forms:", err);
+    res.status(500).json({
+      error: "Internal Server Error",
+      message: "Failed to count forms",
+    });
+  }
+});
 
 export default router;
