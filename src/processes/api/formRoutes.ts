@@ -1,6 +1,8 @@
 import { Router, Request, Response } from "express";
-import { formStore } from "../../entities/form/model/store";
 import { FormData, FormResponse } from "../../entities/form/types";
+import { PostgresFormRepository } from "../../entities/form/repository/postgresFormRepository";
+
+const formRepository = new PostgresFormRepository();
 
 const router = Router();
 
@@ -46,7 +48,7 @@ const handleFormSubmit = async (req: Request, res: Response): Promise<void> => {
       createdAt: new Date(),
     };
 
-    await formStore.add(formData);
+    await formRepository.add(formData);
 
     const response: FormResponse = {
       success: true,
@@ -65,7 +67,7 @@ const handleFormSubmit = async (req: Request, res: Response): Promise<void> => {
 };
 
 const handleFormCount = async (_req: Request, res: Response): Promise<void> => {
-  const count = await formStore.count();
+  const count = await formRepository.count();
   res.json({ count });
 };
 
