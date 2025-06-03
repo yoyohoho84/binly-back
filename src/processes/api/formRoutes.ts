@@ -19,21 +19,21 @@ const handleFormSubmit = async (req: Request, res: Response): Promise<void> => {
     const { name, phone, district, address, consent } =
       req.body as FormRequestBody;
 
-    // Проверка обязательных полей
+    // Validate required fields
     if (!name || !phone || !district || !address || consent === undefined) {
       const response: FormResponse = {
         success: false,
-        message: "Все поля обязательны для заполнения",
+        message: "All fields are required",
       };
       res.status(400).json(response);
       return;
     }
 
-    // Проверка согласия
+    // Validate consent
     if (!consent) {
       const response: FormResponse = {
         success: false,
-        message: "Необходимо согласие на обработку данных",
+        message: "Consent to data processing is required",
       };
       res.status(400).json(response);
       return;
@@ -52,7 +52,7 @@ const handleFormSubmit = async (req: Request, res: Response): Promise<void> => {
 
     const response: FormResponse = {
       success: true,
-      message: "Форма успешно отправлена",
+      message: "Form submitted successfully",
       data: formData,
     };
 
@@ -60,7 +60,7 @@ const handleFormSubmit = async (req: Request, res: Response): Promise<void> => {
   } catch (error) {
     const response: FormResponse = {
       success: false,
-      message: "Ошибка при отправке формы",
+      message: "Error while submitting form",
     };
     res.status(400).json(response);
   }

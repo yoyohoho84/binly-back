@@ -1,9 +1,9 @@
 export interface FormData {
-  name: string; // Имя
-  phone: string; // Телефон
-  district: string; // Район
-  address: string; // Адрес
-  consent: boolean; // Согласие на обработку
+  name: string; // Name
+  phone: string; // Phone
+  district: string; // District
+  address: string; // Address
+  consent: boolean; // Consent to processing
   createdAt: Date;
 }
 
