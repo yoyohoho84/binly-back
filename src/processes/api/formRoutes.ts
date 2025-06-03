@@ -46,7 +46,7 @@ const handleFormSubmit = async (req: Request, res: Response): Promise<void> => {
       createdAt: new Date(),
     };
 
-    await formStore.add(formData);
+    formStore.add(formData);
 
     const response: FormResponse = {
       success: true,
@@ -65,7 +65,7 @@ const handleFormSubmit = async (req: Request, res: Response): Promise<void> => {
 };
 
 const handleFormCount = async (_req: Request, res: Response): Promise<void> => {
-  const count = await formStore.count();
+  const count = formStore.count();
   res.json({ count });
 };
 
